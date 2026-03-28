@@ -35,7 +35,7 @@
         '[style*="visibility: hidden"]', '[style*="visibility:hidden"]',
         'svg', 'canvas',
         '[class*="tracking"]', '[class*="analytics"]',
-        'comment', '.comment', '#comments',
+        '.comment', '#comments',
       ];
 
       noiseSelectors.forEach(selector => {
@@ -145,8 +145,8 @@
         .replace(/\s*\n\s*/g, '\n')         // Trim around newlines
         .replace(/ {2,}/g, ' ')               // Collapse spaces
         .replace(/\n{3,}/g, '\n\n')           // Max 2 newlines
-        .replace(/[""]/g, '"')                // Smart quotes → regular
-        .replace(/['']/g, "'")                // Smart apostrophes → regular
+        .replace(/[\u201C\u201D]/g, '"')        // Smart quotes → regular
+        .replace(/[\u2018\u2019]/g, "'")       // Smart apostrophes → regular
         .replace(/…/g, '...')                 // Ellipsis → dots
         .replace(/—/g, '-')                   // Em dash → hyphen
         .replace(/–/g, '-')                   // En dash → hyphen

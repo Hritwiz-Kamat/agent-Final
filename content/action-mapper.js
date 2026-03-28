@@ -163,11 +163,11 @@
      * Map standalone inputs not inside forms
      */
     mapStandaloneInputs(tools, seen) {
-      const inputs = document.querySelectorAll(
-        'input:not(form input), textarea:not(form textarea), select:not(form select)'
-      );
+      // Select all inputs, textareas, selects and filter out ones inside forms via JS
+      const inputs = document.querySelectorAll('input, textarea, select');
 
       inputs.forEach(el => {
+        if (el.closest('form')) return; // Skip inputs inside forms (handled by mapForms)
         if (!this.isInteractable(el)) return;
         if (el.type === 'hidden') return;
 

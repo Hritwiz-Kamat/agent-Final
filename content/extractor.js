@@ -346,8 +346,14 @@
 
         const text = el.textContent.trim();
         if (text.length > 10) {
-          // Try to detect language from class
-          const langClass = (el.className || '').match(/(?:lang|language)-(\w+)/);
+          // Try to detect language from class on this element or child <code>
+          let langClass = (el.className || '').match(/(?:lang|language)-(\w+)/);
+          if (!langClass && el.tagName === 'PRE') {
+            const codeChild = el.querySelector('code[class]');
+            if (codeChild) {
+              langClass = (codeChild.className || '').match(/(?:lang|language)-(\w+)/);
+            }
+          }
           blocks.push({
             language: langClass ? langClass[1] : undefined,
             code: text.substring(0, 5000) // Cap code length
@@ -375,7 +381,9 @@
 
       // Walk the tree and extract text with some structure
       const textParts = [];
-      const walker = document.createTreeWalker(
+      // Use the clone's ownerDocument to create the walker (avoids cross-document issues)
+      const walkerDoc = body.ownerDocument || document;
+      const walker = walkerDoc.createTreeWalker(
         body,
         NodeFilter.SHOW_TEXT,
         {

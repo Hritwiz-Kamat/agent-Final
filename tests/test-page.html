@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A test page for validating AgentBridge extraction">
+  <meta property="og:title" content="AgentBridge Test Page">
+  <meta property="og:description" content="Testing extraction pipeline">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AgentBridge Test">
+  <link rel="canonical" href="https://example.com/test-page">
+  <title>AgentBridge Test Page — Extraction Validation</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "AgentBridge Test Page",
+    "description": "A page for testing AgentBridge extraction"
+  }
+  </script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+    h1 { color: #6C63FF; }
+    h2 { color: #00D4AA; }
+    .results { background: #16213e; border: 1px solid #0f3460; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .pass { color: #00D4AA; }
+    .fail { color: #FF5C6B; }
+    .warn { color: #FFB547; }
+    pre { background: #0f0f23; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 12px; color: #b4b6c8; max-height: 400px; overflow-y: auto; }
+    button { background: linear-gradient(135deg, #6C63FF, #00D4AA); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    button:hover { opacity: 0.9; }
+    nav { background: #16213e; padding: 10px; border-radius: 6px; margin: 10px 0; }
+    nav a { color: #6C63FF; text-decoration: none; margin: 0 10px; }
+    .sidebar { display: none; } /* Hidden element, should be filtered */
+    .ad-banner { display: none; } /* Ad element, should be filtered */
+    table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+    th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+    th { background: #16213e; }
+    .test-counter { font-family: monospace; font-size: 14px; margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav id="main-nav" role="navigation">
+      <a href="/home">Home</a>
+      <a href="/about">About</a>
+      <a href="/docs">Documentation</a>
+      <a href="/pricing">Pricing</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>AgentBridge Test Page</h1>
+    <p>This page is designed to test all aspects of the AgentBridge extraction pipeline.</p>
+
+    <h2>Content Extraction Tests</h2>
+    <p>This paragraph should be extracted as semantic content. It contains enough words to pass the minimum length filter and should appear in the structured content output.</p>
+    <p>Here is a second paragraph with different content. The deduplication filter should keep both since they have different text.</p>
+
+    <!-- Duplicate paragraph test -->
+    <p>This paragraph should be extracted as semantic content. It contains enough words to pass the minimum length filter and should appear in the structured content output.</p>
+
+    <h3>Lists Test</h3>
+    <ul id="feature-list">
+      <li>Token-efficient extraction</li>
+      <li>MCP-compatible output</li>
+      <li>Action mapping</li>
+      <li>Multi-format support</li>
+    </ul>
+
+    <ol id="steps-list">
+      <li>Install the extension</li>
+      <li>Navigate to a page</li>
+      <li>Click Extract Page</li>
+    </ol>
+
+    <h3>Table Test</h3>
+    <table id="test-table">
+      <thead>
+        <tr><th>Feature</th><th>Status</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Extraction</td><td>Complete</td><td>All content types</td></tr>
+        <tr><td>Action Mapping</td><td>Complete</td><td>Buttons, forms, links</td></tr>
+        <tr><td>MCP Output</td><td>Complete</td><td>Full schema</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Code Block Test</h3>
+    <pre><code class="language-javascript">const result = await agentBridge.extract();
+console.log(result.mcp.resources);
+console.log(result.mcp.tools);</code></pre>
+
+    <h3>Link Test</h3>
+    <p>Visit <a href="https://github.com/agentbridge" title="GitHub Repo">our GitHub repository</a> for the source code.</p>
+    <p>Check out <a href="https://example.com/docs">the documentation</a> for more details.</p>
+
+    <h3>Image Test</h3>
+    <img src="https://via.placeholder.com/200x100" alt="Test image for extraction" width="200" height="100">
+
+    <h2>Interactive Elements Tests</h2>
+
+    <h3>Buttons</h3>
+    <button id="btn-primary" type="button">Primary Action</button>
+    <button id="btn-submit" type="submit">Submit Data</button>
+    <button id="btn-disabled" type="button" disabled>Disabled Button</button>
+
+    <h3>Form Test</h3>
+    <form id="test-form" name="contact" action="/submit" method="POST">
+      <label for="name-input">Full Name</label>
+      <input type="text" id="name-input" name="fullName" placeholder="Enter your name" required>
+
+      <label for="email-input">Email Address</label>
+      <input type="email" id="email-input" name="email" placeholder="you@example.com" required>
+
+      <label for="message-input">Message</label>
+      <textarea id="message-input" name="message" placeholder="Your message here..." rows="4"></textarea>
+
+      <label for="category-select">Category</label>
+      <select id="category-select" name="category">
+        <option value="">Select a category</option>
+        <option value="bug">Bug Report</option>
+        <option value="feature">Feature Request</option>
+        <option value="other">Other</option>
+      </select>
+
+      <input type="hidden" name="source" value="test-page">
+      <button type="submit">Send Message</button>
+    </form>
+
+    <h3>Standalone Input (outside form)</h3>
+    <label for="search-input">Search</label>
+    <input type="search" id="search-input" name="search" placeholder="Search..." aria-label="Search the site">
+
+    <h3>ARIA Interactive Elements</h3>
+    <div role="button" tabindex="0" id="aria-btn">Custom ARIA Button</div>
+    <div role="tab" tabindex="0" id="aria-tab">Tab Item</div>
+    <div onclick="alert('clicked')" id="onclick-div" tabindex="0">Click Handler Div</div>
+
+    <!-- Hidden/noise elements that should be filtered -->
+    <div class="sidebar" aria-hidden="true">This sidebar content should be filtered out.</div>
+    <div class="ad-banner">This ad content should be filtered out.</div>
+
+    <h2>Test Results</h2>
+    <div id="test-output" class="results">
+      <p>Click "Run Tests" to validate the extraction pipeline.</p>
+    </div>
+    <button id="btn-run-tests" type="button" onclick="runTests()">Run Tests</button>
+  </main>
+
+  <!-- Load all AgentBridge modules in order -->
+  <script src="../lib/readability.js"></script>
+  <script src="../content/cleaner.js"></script>
+  <script src="../content/extractor.js"></script>
+  <script src="../content/action-mapper.js"></script>
+  <script src="../lib/mcp-formatter.js"></script>
+  <script src="../content/index.js"></script>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════
+    //  AgentBridge Test Suite
+    //  Validates all extraction modules in a real browser context
+    // ═══════════════════════════════════════════════════════════
+
+    let testResults = { passed: 0, failed: 0, warnings: 0, details: [] };
+
+    function assert(condition, testName, details = '') {
+      if (condition) {
+        testResults.passed++;
+        testResults.details.push({ status: 'pass', name: testName, details });
+      } else {
+        testResults.failed++;
+        testResults.details.push({ status: 'fail', name: testName, details });
+      }
+    }
+
+    function warn(testName, details = '') {
+      testResults.warnings++;
+      testResults.details.push({ status: 'warn', name: testName, details });
+    }
+
+    function runTests() {
+      testResults = { passed: 0, failed: 0, warnings: 0, details: [] };
+
+      // ─── Module Loading Tests ─────────────────────────────
+      assert(typeof window.__agentBridge_cleaner === 'object', 'Cleaner module loaded');
+      assert(typeof window.__agentBridge_extractor === 'object', 'Extractor module loaded');
+      assert(typeof window.__agentBridge_actionMapper === 'object', 'ActionMapper module loaded');
+      assert(typeof window.__agentBridge_mcpFormatter === 'object', 'MCP Formatter module loaded');
+      assert(typeof window.__agentBridge_extract === 'function', 'Orchestrator function loaded');
+      assert(typeof Readability === 'function', 'Readability.js loaded');
+
+      // ─── Full Pipeline Test ──────────────────────────────
+      let result;
+      try {
+        result = window.__agentBridge_extract();
+        assert(!result.error, 'Extraction runs without errors', result.error || '');
+      } catch (e) {
+        assert(false, 'Extraction runs without errors', e.message);
+        renderResults();
+        return;
+      }
+
+      // ─── MCP Output Tests ────────────────────────────────
+      assert(result.mcp !== undefined, 'MCP output exists');
+      assert(result.mcp._meta?.protocol === 'mcp', 'MCP protocol field is "mcp"');
+      assert(result.mcp._meta?.version === '1.0', 'MCP version is "1.0"');
+      assert(result.mcp._meta?.generator === 'AgentBridge', 'MCP generator is "AgentBridge"');
+      assert(Array.isArray(result.mcp.resources), 'MCP resources is an array');
+      assert(result.mcp.resources.length > 0, 'MCP resources has entries');
+      assert(Array.isArray(result.mcp.tools), 'MCP tools is an array');
+      assert(result.mcp.tools.length > 0, 'MCP tools has entries');
+
+      // ─── Resources Tests ─────────────────────────────────
+      const mainResource = result.mcp.resources[0];
+      assert(mainResource.uri?.startsWith('page://'), 'Resource URI uses page:// scheme');
+      assert(mainResource.name?.length > 0, 'Resource has a name');
+      assert(mainResource.mimeType === 'application/json', 'Resource MIME type is application/json');
+      assert(mainResource.content?.metadata?.title?.length > 0, 'Resource metadata has title');
+
+      // ─── Metadata Tests ──────────────────────────────────
+      const meta = mainResource.content?.metadata;
+      assert(meta?.title?.includes('AgentBridge Test Page'), 'Title extracted correctly');
+      assert(meta?.description?.length > 0, 'Meta description extracted');
+      assert(meta?.url?.length > 0, 'URL extracted');
+      assert(meta?.domain?.length > 0, 'Domain extracted');
+      assert(meta?.openGraph?.title === 'AgentBridge Test Page', 'Open Graph tags extracted');
+      assert(meta?.twitterCard?.card === 'summary', 'Twitter Card tags extracted');
+      assert(meta?.canonicalUrl === 'https://example.com/test-page', 'Canonical URL extracted');
+      assert(Array.isArray(meta?.jsonLd) && meta.jsonLd.length > 0, 'JSON-LD extracted');
+
+      // ─── Structured Content Tests ────────────────────────
+      const content = mainResource.content?.structured;
+      assert(content?.headings?.length >= 3, `Headings extracted (found ${content?.headings?.length || 0})`, JSON.stringify(content?.headings?.slice(0, 3)));
+      assert(content?.paragraphs?.length >= 2, `Paragraphs extracted (found ${content?.paragraphs?.length || 0})`);
+
+      // Deduplication test: the duplicate paragraph should be removed
+      const dupCount = content?.paragraphs?.filter(p => p.includes('minimum length filter')).length || 0;
+      assert(dupCount <= 1, `Duplicate paragraphs deduplicated (count: ${dupCount})`);
+
+      assert(content?.links?.length >= 2, `Links extracted (found ${content?.links?.length || 0})`);
+      assert(content?.images?.length >= 1, `Images extracted (found ${content?.images?.length || 0})`);
+      assert(content?.tables?.length >= 1, `Tables extracted (found ${content?.tables?.length || 0})`);
+      assert(content?.lists?.length >= 1, `Lists extracted (found ${content?.lists?.length || 0})`);
+      assert(content?.codeBlocks?.length >= 1, `Code blocks extracted (found ${content?.codeBlocks?.length || 0})`);
+
+      // Table structure check
+      if (content?.tables?.length > 0) {
+        const table = content.tables[0];
+        assert(table.headers?.length === 3, `Table headers correct (found ${table.headers?.length || 0})`);
+        assert(table.rows?.length >= 3, `Table rows correct (found ${table.rows?.length || 0})`);
+      }
+
+      // Code block language detection
+      if (content?.codeBlocks?.length > 0) {
+        assert(content.codeBlocks[0].language === 'javascript', `Code language detected: ${content.codeBlocks[0].language}`);
+      }
+
+      // ─── Stats Tests ─────────────────────────────────────
+      const stats = result.stats;
+      assert(stats?.extractionTimeMs >= 0, `Extraction time recorded (${stats?.extractionTimeMs}ms)`);
+      assert(stats?.rawTokenEstimate > 0, `Raw token estimate (${stats?.rawTokenEstimate})`);
+      assert(stats?.compressedTokenEstimate > 0, `Compressed token estimate (${stats?.compressedTokenEstimate})`);
+      assert(stats?.tokenSavings > 0, `Token savings > 0% (${stats?.tokenSavings}%)`);
+      assert(stats?.compressedTokenEstimate < stats?.rawTokenEstimate, 'Compressed tokens < raw tokens');
+
+      // ─── Raw Output Tests ────────────────────────────────
+      assert(result.raw !== undefined, 'Raw output exists');
+      assert(result.raw.title?.length > 0, 'Raw output has title');
+      assert(Array.isArray(result.raw.actions), 'Raw output has actions array');
+
+      // ─── Text Output Tests ───────────────────────────────
+      assert(typeof result.text === 'string', 'Text output is a string');
+      assert(result.text.length > 0, 'Text output is not empty');
+      assert(result.text.includes('#'), 'Text output contains markdown headings');
+
+      // ─── Tool Count ──────────────────────────────────────
+      assert(typeof result.toolCount === 'number', 'Tool count is a number');
+      assert(result.toolCount > 0, `Tool count > 0 (found ${result.toolCount})`);
+
+      // ─── Action Mapper Tests ─────────────────────────────
+      const tools = result.mcp.tools;
+
+      // Check for button tools
+      const buttonTools = tools.filter(t => t._agentbridge?.elementType === 'button');
+      assert(buttonTools.length >= 2, `Button tools found (${buttonTools.length})`, 
+        buttonTools.map(t => t.name).join(', '));
+
+      // Check disabled button is NOT included (should be filtered)
+      const disabledTools = tools.filter(t => t.name?.includes('disabled'));
+      assert(disabledTools.length === 0, 'Disabled button excluded from tools');
+
+      // Check for navigation link tools
+      const navTools = tools.filter(t => t._agentbridge?.elementType === 'link');
+      assert(navTools.length >= 3, `Navigation link tools found (${navTools.length})`,
+        navTools.map(t => t.name).join(', '));
+
+      // Check for form tools
+      const formTools = tools.filter(t => t._agentbridge?.elementType === 'form');
+      assert(formTools.length >= 1, `Form tools found (${formTools.length})`);
+
+      // Validate form tool schema
+      if (formTools.length > 0) {
+        const formTool = formTools[0];
+        assert(formTool.inputSchema?.properties?.fullName !== undefined, 'Form tool has fullName field');
+        assert(formTool.inputSchema?.properties?.email !== undefined, 'Form tool has email field');
+        assert(formTool.inputSchema?.properties?.message !== undefined, 'Form tool has message field');
+        assert(formTool.inputSchema?.properties?.category !== undefined, 'Form tool has category field');
+        assert(formTool.inputSchema?.required?.includes('fullName'), 'fullName is required');
+        assert(formTool.inputSchema?.required?.includes('email'), 'email is required');
+      }
+
+      // Check for standalone input tools (search input outside form)
+      const inputTools = tools.filter(t => t._agentbridge?.elementType === 'input' || t.name?.includes('search'));
+      assert(inputTools.length >= 1, `Standalone input tools found (${inputTools.length})`);
+
+      // Check for ARIA interactive tools
+      const ariaTools = tools.filter(t => 
+        t._agentbridge?.elementType === 'button' && t.name?.includes('aria') ||
+        t._agentbridge?.elementType === 'tab' ||
+        t._agentbridge?.elementType === 'interactive'
+      );
+      assert(ariaTools.length >= 1, `ARIA interactive tools found (${ariaTools.length})`,
+        ariaTools.map(t => t.name).join(', '));
+
+      // Check tool schema structure
+      tools.forEach((tool, i) => {
+        if (i < 3) { // Check first 3 tools in detail
+          assert(tool.name?.length > 0, `Tool ${i} has name: ${tool.name}`);
+          assert(tool.description?.length > 0, `Tool ${i} has description`);
+          assert(tool.inputSchema?.type === 'object', `Tool ${i} has valid inputSchema`);
+          assert(tool._agentbridge?.elementSelector?.length > 0, `Tool ${i} has CSS selector`);
+        }
+      });
+
+      // ─── Cleaner Module Tests ────────────────────────────
+      const cleaner = window.__agentBridge_cleaner;
+      assert(cleaner.normalizeWhitespace('  hello   world  ') === 'hello world', 'normalizeWhitespace works');
+      assert(cleaner.estimateTokens('hello world') > 0, 'estimateTokens works');
+      assert(cleaner.compressForTokens('\u201Chello\u201D') === '"hello"', 'Smart quote compression works');
+      assert(cleaner.compressForTokens('hello\u00A0world') === 'hello world', 'Non-breaking space normalized');
+      assert(cleaner.compressForTokens('test\u200Bvalue') === 'testvalue', 'Zero-width space removed');
+
+      // ─── Render Results ──────────────────────────────────
+      renderResults();
+
+      // Log full extraction output for inspection
+      console.log('=== FULL EXTRACTION RESULT ===');
+      console.log(JSON.stringify(result, null, 2));
+    }
+
+    function renderResults() {
+      const output = document.getElementById('test-output');
+      const total = testResults.passed + testResults.failed;
+
+      let html = `<h3>${testResults.passed}/${total} tests passed`;
+      if (testResults.warnings > 0) html += ` (${testResults.warnings} warnings)`;
+      html += '</h3>';
+
+      if (testResults.failed > 0) {
+        html += `<p class="fail">❌ ${testResults.failed} tests FAILED</p>`;
+      } else {
+        html += `<p class="pass">✅ All tests passed!</p>`;
+      }
+
+      html += '<div style="margin-top: 10px;">';
+      testResults.details.forEach(t => {
+        const icon = t.status === 'pass' ? '✅' : t.status === 'fail' ? '❌' : '⚠️';
+        const cls = t.status;
+        html += `<div class="test-counter ${cls}">${icon} ${t.name}`;
+        if (t.details) html += ` <small style="color: #636580;">(${t.details})</small>`;
+        html += '</div>';
+      });
+      html += '</div>';
+
+      output.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
