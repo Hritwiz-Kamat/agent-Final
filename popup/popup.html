@@ -62,7 +62,7 @@
       </div>
       <div class="stat-divider"></div>
       <div class="stat" id="stat-savings">
-        <span class="stat-label">Saved</span>
+        <span class="stat-label" id="stat-savings-label">Saved</span>
         <span class="stat-value stat-highlight" id="stat-savings-value">—</span>
       </div>
       <div class="stat-divider"></div>
@@ -77,11 +77,41 @@
       </div>
     </div>
 
+    <!-- Savings Breakdown (visible when Chinese compression is active) -->
+    <div class="savings-breakdown hidden" id="savings-breakdown">
+      <div class="breakdown-item">
+        <span class="breakdown-label">Base</span>
+        <span class="breakdown-value" id="breakdown-base">—</span>
+      </div>
+      <div class="breakdown-dot">·</div>
+      <div class="breakdown-item">
+        <span class="breakdown-label">🀄 Chinese</span>
+        <span class="breakdown-value breakdown-accent" id="breakdown-chinese">—</span>
+      </div>
+      <div class="breakdown-dot">·</div>
+      <div class="breakdown-item">
+        <span class="breakdown-label">Total</span>
+        <span class="breakdown-value breakdown-total" id="breakdown-total">—</span>
+      </div>
+    </div>
+
     <!-- Format Tabs -->
     <div class="format-tabs hidden" id="format-tabs">
       <button class="tab active" data-format="mcp" id="tab-mcp">MCP</button>
       <button class="tab" data-format="raw" id="tab-raw">Raw JSON</button>
       <button class="tab" data-format="text" id="tab-text">Text</button>
+    </div>
+
+    <!-- Chinese Compression Toggle -->
+    <div class="compression-toggle hidden" id="compression-toggle">
+      <div class="toggle-left">
+        <span class="toggle-icon">🀄</span>
+        <span class="toggle-label">Chinese Compression</span>
+      </div>
+      <label class="toggle-switch" id="toggle-switch">
+        <input type="checkbox" id="chinese-toggle" />
+        <span class="toggle-slider"></span>
+      </label>
     </div>
 
     <!-- Output Area -->

@@ -1,7 +1,8 @@
 /**
  * AgentBridge — Popup Controller
  * Handles UI interactions, extraction triggering,
- * output display, clipboard, and downloads.
+ * output display, clipboard, downloads, and
+ * Chinese token compression toggle.
  */
 
 (function () {
@@ -10,6 +11,7 @@
   // ─── State ─────────────────────────────────────────────────
   let currentData = null;
   let currentFormat = 'mcp';
+  let chineseCompressionEnabled = false;
 
   // ─── DOM References ────────────────────────────────────────
   const elements = {
@@ -24,6 +26,7 @@
     statsBar: document.getElementById('stats-bar'),
     statTokens: document.getElementById('stat-tokens-value'),
     statSavings: document.getElementById('stat-savings-value'),
+    statSavingsLabel: document.getElementById('stat-savings-label'),
     statTools: document.getElementById('stat-tools-value'),
     statTime: document.getElementById('stat-time-value'),
     formatTabs: document.getElementById('format-tabs'),
@@ -35,6 +38,13 @@
     loadingOverlay: document.getElementById('loading-overlay'),
     loadingText: document.getElementById('loading-text'),
     extractSection: document.getElementById('extract-section'),
+    // Chinese compression elements
+    compressionToggle: document.getElementById('compression-toggle'),
+    chineseToggle: document.getElementById('chinese-toggle'),
+    savingsBreakdown: document.getElementById('savings-breakdown'),
+    breakdownBase: document.getElementById('breakdown-base'),
+    breakdownChinese: document.getElementById('breakdown-chinese'),
+    breakdownTotal: document.getElementById('breakdown-total'),
   };
 
   // ─── Initialization ───────────────────────────────────────
@@ -48,6 +58,16 @@
         elements.pageInfo.title = tab.url;
       }
     } catch (e) { /* ignore */ }
+
+    // Load persisted Chinese compression preference
+    try {
+      chrome.storage.local.get(['chineseCompression'], (data) => {
+        if (data?.chineseCompression) {
+          chineseCompressionEnabled = true;
+          elements.chineseToggle.checked = true;
+        }
+      });
+    } catch (e) { /* ignore — not in extension context */ }
 
     // Check for cached result
     chrome.runtime.sendMessage({ action: 'getLastResult' }, (response) => {
@@ -73,6 +93,32 @@
         renderOutput();
       });
     });
+
+    // Chinese compression toggle
+    elements.chineseToggle.addEventListener('change', handleCompressionToggle);
+  }
+
+  // ─── Compression Toggle Handler ────────────────────────────
+  function handleCompressionToggle() {
+    chineseCompressionEnabled = elements.chineseToggle.checked;
+
+    // Persist toggle state
+    try {
+      chrome.storage.local.set({ chineseCompression: chineseCompressionEnabled });
+    } catch (e) { /* ignore */ }
+
+    // Re-render output and update stats in real time
+    if (currentData) {
+      updateStats();
+      renderOutput();
+    }
+
+    // Show toast feedback
+    if (chineseCompressionEnabled) {
+      showToast('🀄 Chinese compression ON', 'success');
+    } else {
+      showToast('Chinese compression OFF', 'success');
+    }
   }
 
   // ─── Extract Handler ──────────────────────────────────────
@@ -139,15 +185,12 @@
     elements.errorContainer.classList.add('hidden');
 
     // Show stats
-    const stats = currentData.stats || {};
-    elements.statTokens.textContent = formatNumber(stats.compressedTokenEstimate || 0);
-    elements.statSavings.textContent = `${stats.tokenSavings || 0}%`;
-    elements.statTools.textContent = currentData.toolCount || 0;
-    elements.statTime.textContent = `${stats.extractionTimeMs || 0}ms`;
+    updateStats();
     elements.statsBar.classList.remove('hidden');
 
-    // Show format tabs
+    // Show format tabs and compression toggle
     elements.formatTabs.classList.remove('hidden');
+    elements.compressionToggle.classList.remove('hidden');
 
     // Show output
     elements.outputContainer.classList.remove('hidden');
@@ -157,25 +200,180 @@
     elements.actions.classList.remove('hidden');
   }
 
+  // ─── Update Stats Display ─────────────────────────────────
+  function updateStats() {
+    if (!currentData) return;
+
+    const stats = currentData.stats || {};
+    const baseSavings = stats.tokenSavings || 0;
+
+    elements.statTools.textContent = currentData.toolCount || 0;
+    elements.statTime.textContent = `${stats.extractionTimeMs || 0}ms`;
+
+    if (chineseCompressionEnabled) {
+      // Calculate additional Chinese compression savings
+      const outputContent = getOutputForCurrentFormat();
+      const beforeJSON = JSON.stringify(outputContent);
+      const compressed = applyCompression(outputContent);
+      const afterJSON = JSON.stringify(compressed);
+
+      const beforeTokens = Math.ceil(beforeJSON.length / 4);
+      const afterTokens = Math.ceil(afterJSON.length / 4);
+      const chineseSavingsPercent = beforeTokens > 0
+        ? Math.round((1 - afterTokens / beforeTokens) * 100)
+        : 0;
+
+      // Total savings from raw HTML → compressed Chinese output
+      const rawTokens = stats.rawTokenEstimate || 1;
+      const totalSavings = rawTokens > 0
+        ? Math.round((1 - afterTokens / rawTokens) * 100)
+        : baseSavings;
+
+      elements.statTokens.textContent = formatNumber(afterTokens);
+      elements.statSavings.textContent = `${totalSavings}%`;
+      elements.statSavingsLabel.textContent = 'Total';
+
+      // Show breakdown
+      elements.breakdownBase.textContent = `${baseSavings}%`;
+      elements.breakdownChinese.textContent = `+${chineseSavingsPercent}%`;
+      elements.breakdownTotal.textContent = `${totalSavings}%`;
+      elements.savingsBreakdown.classList.remove('hidden');
+    } else {
+      // Standard stats without Chinese compression
+      elements.statTokens.textContent = formatNumber(stats.compressedTokenEstimate || 0);
+      elements.statSavings.textContent = `${baseSavings}%`;
+      elements.statSavingsLabel.textContent = 'Saved';
+      elements.savingsBreakdown.classList.add('hidden');
+    }
+  }
+
+  // ─── Get Output for Current Format ─────────────────────────
+  function getOutputForCurrentFormat() {
+    if (!currentData) return {};
+    switch (currentFormat) {
+      case 'mcp':  return currentData.mcp || {};
+      case 'raw':  return currentData.raw || {};
+      case 'text': return currentData.text || '';
+      default:     return currentData.mcp || {};
+    }
+  }
+
+  // ─── Apply Chinese Compression ─────────────────────────────
+  function applyCompression(content) {
+    if (!chineseCompressionEnabled) return content;
+
+    // Text format: compress semantic labels in plain text
+    if (typeof content === 'string') {
+      return applyTextCompression(content);
+    }
+
+    // JSON formats: use the cleaner's deep-walk compression
+    // The cleaner module is loaded in the content script context,
+    // so we use our own inline copy of the map + walker in popup
+    return deepCompress(content);
+  }
+
+  /**
+   * Inline Chinese compression for popup context.
+   * The cleaner module runs in content script context, not popup,
+   * so we need a self-contained version here.
+   */
+
+  // Compression map (same as cleaner.js TOKEN_COMPRESS_MAP)
+  const COMPRESS_MAP = {
+    'navigation':'导航','navigate':'导航','nav':'导航','home':'首页',
+    'back':'返回','next':'下一','previous':'上一','breadcrumb':'路径',
+    'menu':'菜单','pagination':'分页','submit':'提交','submit_form':'提交表单',
+    'input':'输入','form':'表单','search':'搜索','filter':'筛选',
+    'select':'选择','checkbox':'复选','radio':'单选','dropdown':'下拉',
+    'placeholder':'占位','required':'必填','validation':'验证','label':'标签',
+    'click':'点击','click_button':'点击按钮','button':'按钮','close':'关闭',
+    'cancel':'取消','confirm':'确认','save':'保存','delete':'删除',
+    'edit':'编辑','download':'下载','upload':'上传','copy':'复制',
+    'reset':'重置','toggle':'切换','expand':'展开','collapse':'折叠',
+    'title':'标题','page_title':'页标题','description':'描述','heading':'标题',
+    'paragraph':'段落','content':'内容','article':'文章','summary':'摘要',
+    'text':'文本','image':'图片','video':'视频','audio':'音频',
+    'link':'链接','table':'表格','list':'列表','code':'代码',
+    'header':'页头','footer':'页脚','sidebar':'侧栏','main':'主体',
+    'section':'区块','container':'容器','wrapper':'包裹','modal':'弹窗',
+    'popup':'弹出','overlay':'遮罩','tab':'标签页','panel':'面板',
+    'card':'卡片','widget':'组件','banner':'横幅','icon':'图标',
+    'add_to_cart':'加购','buy_now':'立购','checkout':'结算','cart':'购物车',
+    'price':'价格','quantity':'数量','product':'商品','category':'分类',
+    'review':'评价','rating':'评分','wishlist':'收藏','order':'订单',
+    'shipping':'配送','payment':'支付','coupon':'优惠券','discount':'折扣',
+    'login':'登录','logout':'登出','signup':'注册','sign_up':'注册',
+    'sign_in':'登录','profile':'个人','settings':'设置','share':'分享',
+    'like':'赞','comment':'评论','follow':'关注','subscribe':'订阅',
+    'notification':'通知','message':'消息','reply':'回复','post':'发布',
+    'resources':'资源','tools':'工具','input_schema':'输入模式',
+    'inputSchema':'输入模式','properties':'属性','element':'元素',
+    'selector':'选择器','type':'类型','name':'名称','value':'值',
+    'metadata':'元数据','structured':'结构化','extraction':'提取',
+    'interactive':'可交互','disabled':'禁用','external':'外部',
+    'loading':'加载','error':'错误','success':'成功','warning':'警告',
+    'empty':'空','none':'无','true':'是','false':'否',
+    'null':'空值','undefined':'未定义',
+  };
+
+  // Patterns to preserve (never compress)
+  const PRESERVE_RX = [
+    /^https?:\/\//i, /^\/\//, /^page:\/\//,
+    /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i,
+    /^\$?\d[\d,.]*%?$/, /^#[0-9a-f]{3,8}$/i,
+    /^[a-f0-9-]{36}$/i, /^rgb[a]?\(/i,
+    /^[.#\[].*[>\s:]/, /^data:/,
+    /^[A-Z][a-z]+(?:\s[A-Z][a-z]+)+$/,
+    /[{}();=<>]/, /^\//,
+  ];
+
+  function shouldPreserve(val) {
+    if (typeof val !== 'string') return true;
+    if (val.length > 200 || val.length < 2) return true;
+    return PRESERVE_RX.some(rx => rx.test(val));
+  }
+
+  function deepCompress(node) {
+    if (node == null) return node;
+    if (Array.isArray(node)) return node.map(deepCompress);
+    if (typeof node === 'string') {
+      const lower = node.toLowerCase().trim();
+      if (COMPRESS_MAP[lower] && !shouldPreserve(node)) return COMPRESS_MAP[lower];
+      return node;
+    }
+    if (typeof node !== 'object') return node;
+
+    const result = {};
+    for (const key of Object.keys(node)) {
+      const lowerKey = key.toLowerCase();
+      const newKey = COMPRESS_MAP[lowerKey] || key;
+      result[newKey] = deepCompress(node[key]);
+    }
+    return result;
+  }
+
+  function applyTextCompression(text) {
+    if (!text) return text;
+    // Replace standalone semantic words in text output
+    let result = text;
+    for (const [eng, chn] of Object.entries(COMPRESS_MAP)) {
+      // Only replace full words, not substrings
+      const rx = new RegExp(`\\b${eng.replace(/_/g, '[_ ]')}\\b`, 'gi');
+      result = result.replace(rx, chn);
+    }
+    return result;
+  }
+
   // ─── Render Output ────────────────────────────────────────
   function renderOutput() {
     if (!currentData) return;
 
-    let content = '';
-    let isJSON = true;
+    let content = getOutputForCurrentFormat();
+    let isJSON = currentFormat !== 'text';
 
-    switch (currentFormat) {
-      case 'mcp':
-        content = currentData.mcp || {};
-        break;
-      case 'raw':
-        content = currentData.raw || {};
-        break;
-      case 'text':
-        content = currentData.text || '';
-        isJSON = false;
-        break;
-    }
+    // Apply Chinese compression if enabled
+    content = applyCompression(content);
 
     if (isJSON) {
       const jsonString = JSON.stringify(content, null, 2);
@@ -183,6 +381,9 @@
     } else {
       elements.outputContent.textContent = content;
     }
+
+    // Update stats to reflect current compression state
+    updateStats();
 
     // Scroll to top
     elements.outputContent.closest('.output-scroll').scrollTop = 0;
@@ -218,21 +419,18 @@
   async function handleCopy() {
     if (!currentData) return;
 
-    let content = '';
-    switch (currentFormat) {
-      case 'mcp':
-        content = JSON.stringify(currentData.mcp, null, 2);
-        break;
-      case 'raw':
-        content = JSON.stringify(currentData.raw, null, 2);
-        break;
-      case 'text':
-        content = currentData.text || '';
-        break;
+    let content = getOutputForCurrentFormat();
+    content = applyCompression(content);
+
+    let text = '';
+    if (typeof content === 'string') {
+      text = content;
+    } else {
+      text = JSON.stringify(content, null, 2);
     }
 
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(text);
       elements.btnCopy.classList.add('copied');
       const originalText = elements.btnCopy.querySelector('span').textContent;
       elements.btnCopy.querySelector('span').textContent = 'Copied!';
@@ -251,29 +449,17 @@
   function handleDownload() {
     if (!currentData) return;
 
-    let content = '';
-    let filename = '';
-    let mimeType = '';
+    let content = getOutputForCurrentFormat();
+    content = applyCompression(content);
 
-    switch (currentFormat) {
-      case 'mcp':
-        content = JSON.stringify(currentData.mcp, null, 2);
-        filename = `agentbridge-mcp-${Date.now()}.json`;
-        mimeType = 'application/json';
-        break;
-      case 'raw':
-        content = JSON.stringify(currentData.raw, null, 2);
-        filename = `agentbridge-raw-${Date.now()}.json`;
-        mimeType = 'application/json';
-        break;
-      case 'text':
-        content = currentData.text || '';
-        filename = `agentbridge-text-${Date.now()}.txt`;
-        mimeType = 'text/plain';
-        break;
-    }
+    const isText = currentFormat === 'text';
+    const suffix = chineseCompressionEnabled ? '-zh' : '';
+    const text = isText ? content : JSON.stringify(content, null, 2);
+    const ext = isText ? 'txt' : 'json';
+    const mimeType = isText ? 'text/plain' : 'application/json';
+    const filename = `agentbridge-${currentFormat}${suffix}-${Date.now()}.${ext}`;
 
-    const blob = new Blob([content], { type: mimeType });
+    const blob = new Blob([text], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -293,7 +479,9 @@
 
     // Reset UI
     elements.statsBar.classList.add('hidden');
+    elements.savingsBreakdown.classList.add('hidden');
     elements.formatTabs.classList.add('hidden');
+    elements.compressionToggle.classList.add('hidden');
     elements.outputContainer.classList.add('hidden');
     elements.actions.classList.add('hidden');
     elements.errorContainer.classList.add('hidden');
@@ -336,7 +524,9 @@
     elements.errorContainer.classList.remove('hidden');
     elements.extractSection.classList.add('hidden');
     elements.statsBar.classList.add('hidden');
+    elements.savingsBreakdown.classList.add('hidden');
     elements.formatTabs.classList.add('hidden');
+    elements.compressionToggle.classList.add('hidden');
     elements.outputContainer.classList.add('hidden');
     elements.actions.classList.add('hidden');
   }

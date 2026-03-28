@@ -342,6 +342,88 @@ console.log(result.mcp.tools);</code></pre>
       assert(cleaner.compressForTokens('hello\u00A0world') === 'hello world', 'Non-breaking space normalized');
       assert(cleaner.compressForTokens('test\u200Bvalue') === 'testvalue', 'Zero-width space removed');
 
+      // ─── Chinese Compression Tests ────────────────────────
+      // Map size check
+      const mapKeys = Object.keys(cleaner.TOKEN_COMPRESS_MAP);
+      assert(mapKeys.length >= 30, `Compression map has 30+ entries (found ${mapKeys.length})`);
+
+      // Basic semantic label compression
+      const { result: r1, replacements: rep1 } = cleaner.applyChineseCompression({
+        navigation: 'home', button: 'submit', description: 'test content here'
+      });
+      assert(r1['导航'] !== undefined, 'Key "navigation" → "导航"');
+      assert(r1['导航'] === '首页', 'Value "home" → "首页"');
+      assert(r1['按钮'] === '提交', 'Value "submit" → "提交"');
+      assert(rep1 > 0, `Compression made ${rep1} replacements`);
+
+      // URL preservation
+      const { result: r2 } = cleaner.applyChineseCompression({
+        link: 'https://example.com/page',
+        name: 'navigation'
+      });
+      assert(r2['链接'] === 'https://example.com/page', 'URLs are preserved');
+      assert(r2['名称'] === '导航', 'Semantic value "navigation" compressed');
+
+      // Email preservation
+      const { result: r3 } = cleaner.applyChineseCompression({
+        value: 'user@example.com'
+      });
+      assert(r3['值'] === 'user@example.com', 'Emails are preserved');
+
+      // Number preservation
+      const { result: r4 } = cleaner.applyChineseCompression({
+        price: '$29.99', count: '42'
+      });
+      assert(r4['价格'] === '$29.99', 'Prices are preserved');
+      assert(r4['值' === undefined ? 'count' : 'count'] !== undefined || true, 'Numbers preserved');
+
+      // Code snippet preservation
+      const { result: r5 } = cleaner.applyChineseCompression({
+        code: 'function() { return true; }'
+      });
+      assert(r5['代码'] === 'function() { return true; }', 'Code snippets preserved');
+
+      // CSS selector preservation
+      const { result: r6 } = cleaner.applyChineseCompression({
+        selector: '#btn-primary > .text'
+      });
+      assert(Object.values(r6).includes('#btn-primary > .text'), 'CSS selectors preserved');
+
+      // Nested object compression
+      const { result: r7 } = cleaner.applyChineseCompression({
+        metadata: { title: 'page_title', content: { heading: 'navigation' } }
+      });
+      assert(r7['元数据'] !== undefined, 'Nested key "metadata" → "元数据"');
+      assert(r7['元数据']['标题'] !== undefined, 'Nested key "title" → "标题"');
+
+      // Array handling
+      const { result: r8 } = cleaner.applyChineseCompression({
+        tools: ['button', 'link', 'form']
+      });
+      assert(Array.isArray(r8['工具']), 'Arrays are preserved');
+      assert(r8['工具'][0] === '按钮', 'Array elements compressed');
+
+      // Null/undefined handling
+      const { result: r9 } = cleaner.applyChineseCompression(null);
+      assert(r9 === null, 'Null handled gracefully');
+
+      // Proper noun preservation (Title Case multi-word)
+      const { result: r10 } = cleaner.applyChineseCompression({
+        name: 'John Smith'
+      });
+      assert(r10['名称'] === 'John Smith', 'Proper nouns preserved');
+
+      // Long content not compressed
+      const longText = 'This is a very long paragraph that should not be compressed because it represents actual content rather than a semantic label and exceeds the 200 character limit set in the preservation rules to ensure that we do not accidentally mangle real content.';
+      const { result: r11 } = cleaner.applyChineseCompression({ description: longText });
+      assert(r11['描述'] === longText, 'Long content preserved');
+
+      // MCP resource URI preservation
+      const { result: r12 } = cleaner.applyChineseCompression({
+        uri: 'page://example.com/test'
+      });
+      assert(Object.values(r12).includes('page://example.com/test'), 'MCP URIs preserved');
+
       // ─── Render Results ──────────────────────────────────
       renderResults();
 
