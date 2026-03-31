@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  lightpanda:
+    image: lightpanda/browser:nightly
+    ports:
+      - "9222:9222"
+    command: ["serve", "--host", "0.0.0.0", "--port", "9222", "--obey-robots"]
+    restart: unless-stopped
+    
+  agentbridge:
+    build: .
+    ports:
+      - "3100:3100"
+    environment:
+      - LIGHTPANDA_ENDPOINT=ws://lightpanda:9222
+      - API_KEY=${API_KEY:-}
+      - CHINESE_COMPRESSION=false
+      # Use the lightpanda engine since we're composing them
+      - BROWSER_ENGINE=lightpanda
+    depends_on:
+      - lightpanda
+    restart: unless-stopped

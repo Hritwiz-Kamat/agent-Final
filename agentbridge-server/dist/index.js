@@ -76,16 +76,8 @@ program
     .command('mcp')
     .description('Start MCP server (stdio transport for Claude/Cursor)')
     .action(async () => {
-    log.info('MCP server mode — will be implemented in Phase 4');
-    log.info('For now, use the CLI or REST API interface');
-    // Phase 4 will add:
-    // import { startMcpServer } from './mcp/server.js';
-    // await startMcpServer();
-    process.stdout.write(JSON.stringify({
-        message: 'MCP server will be implemented in Phase 4',
-        hint: 'Use "agentbridge extract <url>" or "agentbridge serve" instead',
-    }) + '\n');
-    process.exit(0);
+    const { startMcpServer } = await import('./mcp/server.js');
+    await startMcpServer();
 });
 // ─── REST API Server ──────────────────────────────────────
 program
@@ -94,16 +86,15 @@ program
     .option('-p, --port <port>', 'API port', String(config.apiPort))
     .option('--mcp', 'Also start MCP server (stdio)')
     .action(async (opts) => {
-    log.info('REST API server mode — will be implemented in Phase 5');
-    log.info('For now, use the CLI interface');
-    // Phase 5 will add:
-    // import { startApiServer } from './api/server.js';
-    // await startApiServer(parseInt(opts.port));
-    process.stdout.write(JSON.stringify({
-        message: 'REST API server will be implemented in Phase 5',
-        hint: 'Use "agentbridge extract <url>" for now',
-    }) + '\n');
-    process.exit(0);
+    const port = parseInt(opts.port, 10);
+    // Start REST API
+    const { startApiServer } = await import('./api/server.js');
+    await startApiServer(port);
+    // Optionally also start MCP server (stdio)
+    if (opts.mcp) {
+        const { startMcpServer } = await import('./mcp/server.js');
+        await startMcpServer();
+    }
 });
 // ─── Graceful Shutdown ────────────────────────────────────
 async function shutdown() {
