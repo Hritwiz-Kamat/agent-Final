@@ -1,30 +1,57 @@
-# AgentBridge 🌉
+# AgentBrowser 🤖
 
-The web was built for humans. AgentBridge makes it readable for AI.
+The web has 2 billion pages.
+AI agents can't read any of them properly.
 
-AgentBridge is a Chrome extension that converts any webpage into 
-clean, structured, token-efficient JSON — purpose-built for AI agents. 
-No scraping setup. No custom parsers. Just install and every website 
-becomes agent-native.
+AgentBrowser is a headless browser purpose-built for 
+AI agents — powered by Lightpanda under the hood and 
+AgentBridge compression on top.
 
-## What it does
-- Strips HTML noise and extracts only semantic content
-- Compresses token count by up to 80%
-- Maps page actions (buttons, forms) into callable agent tools
-- Outputs MCP-compatible structured data
+No pixels. No rendering. No human needed.
+Just pure, structured, token-efficient intelligence 
+extracted from any webpage, instantly.
 
-## Built for
-- AI developers building browser agents
-- Startups reducing LLM API costs
-- Enterprises running AI workflows at scale
+## How it works
+
+Any URL
+  → AgentBrowser fetches it (via Lightpanda)
+  → AgentBridge strips the noise  
+  → Compresses tokens by up to 80%
+  → Outputs clean MCP-compatible JSON
+  → Your AI agent gets pure signal
+
+## Why not just use Chrome?
+
+Chrome was built for humans.
+- 9x more memory than needed
+- 11x slower than necessary  
+- Renders pixels nobody asked for
+
+AgentBrowser renders intelligence, not pixels.
+
+## Built on
+
+- 🐼 Lightpanda — headless browser engine (Zig)
+- 🌉 AgentBridge — compression + MCP output layer
+- 🤖 MCP Protocol — universal agent compatibility
+
+## Use cases
+
+- AI agents that navigate the web autonomously
+- LLM training data extraction at scale
+- Enterprise AI workflows on any website
+- Token-cost optimization for agent pipelines
 
 ## Stack
-- Chrome Extension (Manifest V3)
-- JavaScript / Node.js
-- MCP Protocol Output
+- Zig (Lightpanda core)
+- JavaScript / Node.js (AgentBridge layer)
+- MCP Protocol output
 
 ---
-"The greatest leverage in a business is control over resources 
-that others depend on." — John D. Rockefeller
 
-AgentBridge doesn't own the web. It owns the refinery.
+"The greatest leverage in a business is control over 
+resources that others depend on."
+— John D. Rockefeller, World's First Billionaire
+
+We don't own the web.
+We own the refinery. 🛢️
