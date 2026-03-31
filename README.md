@@ -348,7 +348,7 @@ Built on [Lightpanda](https://github.com/lightpanda-io/browser) (AGPL-3.0).
 
 ---
 
-Built with ❤️ by [Krish Gupta](https://github.com/krishgupta69), Ms. Jain & [Hritwiz Kamat](https://github.com/hritwizkamat)
+Built with ❤️ by [Krish Gupta](https://github.com/krishgupta69) & [Hritwiz Kamat](https://github.com/Hritwiz-Kamat/)
 
 [⭐ Star this repo](https://github.com/krishgupta69/agentbrowser) · [☁️ Try Cloud API](https://agentbrowser.dev) · [💬 Discord](https://discord.gg/agentbrowser)
 
