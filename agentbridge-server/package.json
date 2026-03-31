@@ -1,0 +1,56 @@
+{
+  "name": "agentbridge-server",
+  "version": "2.0.0",
+  "description": "AgentBridge MCP Server + REST API — Turn any URL into structured, token-compressed, MCP-compatible JSON with mapped interactive elements.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "agentbridge": "dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "npm run build:bundles && tsc",
+    "build:bundles": "tsx scripts/build-bundles.ts",
+    "start": "node dist/index.js",
+    "mcp": "node dist/index.js mcp",
+    "cli": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@mozilla/readability": "^0.5.0",
+    "commander": "^13.1.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "jsdom": "^26.0.0",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "puppeteer-core": "^24.6.0",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.13.14",
+    "esbuild": "^0.25.2",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "web-extraction",
+    "headless-browser",
+    "lightpanda",
+    "ai-tools",
+    "agent-bridge"
+  ],
+  "license": "MIT"
+}
