@@ -14,6 +14,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { extractPage } from '../engine/orchestrator.js';
 import { createChildLogger } from '../lib/logger.js';
+import { tokenTracker } from '../lib/token-tracker.js';
 
 const log = createChildLogger('mcp-resources');
 
@@ -187,5 +188,27 @@ export function registerResources(server: McpServer): void {
     },
   );
 
-  log.info('MCP resources registered (page_content, page_text)');
+  // ─── agentbridge://stats/tokens — Session Stats ────────
+  server.registerResource(
+    'session_stats',
+    'agentbridge://stats/tokens',
+    {
+      description: 'Cumulative token usage stats for the current session.',
+      mimeType: 'application/json',
+    },
+    async (uri) => {
+      log.info({ uri: uri.href }, 'Resource read: session stats');
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            mimeType: 'application/json',
+            text: JSON.stringify(tokenTracker.getSessionStats(), null, 2),
+          },
+        ],
+      };
+    }
+  );
+
+  log.info('MCP resources registered (page_content, page_text, session_stats)');
 }

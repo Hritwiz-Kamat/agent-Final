@@ -18,6 +18,8 @@ import { config } from './config.js';
 import { browserPool } from './browser/pool.js';
 import { extractPage, listActions, executeAction } from './engine/orchestrator.js';
 import { createChildLogger } from './lib/logger.js';
+import { tokenTracker } from './lib/token-tracker.js';
+import { estimateTokens } from './lib/token-counter.js';
 
 const log = createChildLogger('main');
 
@@ -48,11 +50,24 @@ program
 
       process.stdout.write(output + '\n');
 
+      // Record and print usage for CLI
+      const callStats = tokenTracker.recordCall('extract', output, result.stats);
+      process.stdout.write('\n--- Token Usage ---\n');
+      process.stdout.write(JSON.stringify({
+        outputTokens: callStats.outputTokens,
+        rawPageTokens: callStats.rawPageTokens,
+        compressedPageTokens: callStats.compressedPageTokens,
+        tokensSaved: callStats.tokensSaved,
+      }, null, 2) + '\n');
+
       log.info({
         url,
         format: opts.format,
         toolCount: result.toolCount,
-        tokenSavings: result.stats?.tokenSavings,
+        tokenUsage: {
+          outputTokens: callStats.outputTokens,
+          tokensSaved: callStats.tokensSaved
+        }
       }, 'Extraction complete');
     } catch (err) {
       log.error({ err, url }, 'Extraction failed');
